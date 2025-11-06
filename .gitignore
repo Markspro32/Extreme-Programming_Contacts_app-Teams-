@@ -1,0 +1,27 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.Lib/
+.Scripts/
+.pyvenv.cfg
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+*.sqlite3
+*.sqlite
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db# created by virtualenv automatically
+
