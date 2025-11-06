@@ -59,9 +59,9 @@ python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 ```
 ### 3. Install Dependencies
-you need to manually install:
+you need to install:
 ```bash
-pip install django django-cors-headers djangorestframework
+pip install -r requirement.txt
 ```
 ### 4. Apply Migrations
 ```bash
