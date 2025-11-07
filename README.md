@@ -43,8 +43,12 @@ contacts_app/           # Main application folder
 ├── tests.py
 ├── urls.py             # URL routing for contact endpoints
 ├── views.py            # Views / API logic
+README.md               # This documentation
 manage.py               # Django project manager
-requirements.txt
+.gitignore              # Files and directories to exclude from 
+requirements.txt        # required packages
+LICENSE                 # License file (MIT License)
+codestyle.md            # Code style and formatting 
 ```
 
 ## Setup Instructions
