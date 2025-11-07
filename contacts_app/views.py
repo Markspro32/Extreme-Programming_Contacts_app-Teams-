@@ -4,7 +4,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .models import Contact
-from django.http import HttpResponsePermanentRedirect
+
 
 # Helper function to safely parse JSON from request body
 def parse_json_body(request):
@@ -137,6 +137,3 @@ class ContactDetailView(View):
             print(f"❌ Delete failed: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
-def index(request):
-    return HttpResponsePermanentRedirect(
-        'http://markspro32.github.io/Yuxiang-Xie_832301327_Contacts-Web-App_front_end/')
