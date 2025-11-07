@@ -26,29 +26,32 @@ The backend communicates with the frontend hosted at `http://127.0.0.1:5500/Cont
 
 ## Project Structure
 ```
-Contacts/           # Django project settings folder
-├── init.py
-├── asgi.py
-├── settings.py
-├── urls.py
-├── wsgi.py
-contacts_app/           # Main application folder
-├── migrations
-  ├── 0001_initial.py
-  ├── __init__.py
-├── __init__.py
-├── admin.py
-├── apps.py
-├── models.py           # Contact model
-├── tests.py
-├── urls.py             # URL routing for contact endpoints
-├── views.py            # Views / API logic
-README.md               # This documentation
-manage.py               # Django project manager
-.gitignore              # Files and directories to exclude from 
-requirements.txt        # required packages
-LICENSE                 # License file (MIT License)
-codestyle.md            # Code style and formatting 
+Yuxiang-Xie_832301327_Contacts-Web-APP_back_end/
+├── Contacts/                         # Django project configuration folder
+│   ├── init.py
+│   ├── asgi.py                       # ASGI server config
+│   ├── settings.py                   # Global project settings
+│   ├── urls.py                       # Root URL routing
+│   └── wsgi.py                       # WSGI server config
+│
+├── contacts_app/                     # Main application handling Contacts CRUD logic
+│   ├── init.py
+│   ├── admin.py                      # Django admin registration
+│   ├── apps.py                       # App config
+│   ├── models.py                     # Contact model definitions
+│   ├── views.py                      # API view logic (CRUD endpoints)
+│   ├── urls.py                       # App-level URL routing
+│   ├── serializers.py                # DRF serializers (if used)
+│   └── migrations/                   # Database schema migrations
+│       └── init.py
+│
+├── .gitignore                        # Git version control ignore rules
+├── LICENSE                           # MIT License
+├── README.md                         # Documentation file
+├── codestyle.md                      # Backend code styling guidelines
+├── manage.py                         # Django project management tool
+├── pyvenv.cfg                        # Python virtual environment config (auto-generated)
+└── requirements.txt                  # Python dependencies list
 ```
 
 ## Setup Instructions
