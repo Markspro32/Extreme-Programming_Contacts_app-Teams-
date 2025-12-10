@@ -58,7 +58,7 @@ The app also supports **Excel import/export** of the address book.
 ---
 
 ## Project Structure (simplified)
-
+```
 Contacts/
 ├── Contacts/                    # Django project settings
 │   ├── __init__.py
@@ -88,7 +88,7 @@ Contacts/
 ├── requirements.txt
 ├── README.md
 └── LICENSE---
-
+```
 ## Data Model
 
 ### `Contact`
