@@ -1,10 +1,11 @@
 // ====== CONFIGURATION ======
-// Backend API address
-const API_BASE = 'http://8.138.121.2:8000/contacts/';
+// Backend API address - use relative URL to work with any host
+const API_BASE = '/contacts/';
 
 // DOM
 const contactForm = document.getElementById('add-contact-form');
 const contactsList = document.getElementById('contacts-list');
+const frequentlyAccessedList = document.getElementById('frequently-accessed-list');
 const errorMessage = document.getElementById('error-message');
 
 // ====== PAGE INITIALIZATION ======
@@ -35,33 +36,83 @@ async function loadContacts() {
 
 // ====== RENDER CONTACTS ======
 function renderContacts(contacts) {
+  // Clear both lists
   contactsList.innerHTML = '';
+  frequentlyAccessedList.innerHTML = '';
   
   if (contacts.length === 0) {
     contactsList.innerHTML = '<li>No contacts yet. Add one below!</li>';
     return;
   }
 
-  contacts.forEach(contact => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <div>
-        <strong>${escapeHtml(contact.name)}</strong><br>
-        Email: ${escapeHtml(contact.email)}<br>
-        Phone: ${escapeHtml(contact.phone)}
-      </div>
-      <div>
-        <button class="edit-btn" data-id="${contact.id}">Edit</button>
-        <button class="delete-btn" data-id="${contact.id}">Delete</button>
-      </div>
-    `;
-    contactsList.appendChild(li);
-  });
+  // Separate bookmarked and non-bookmarked contacts
+  const bookmarkedContacts = contacts.filter(c => c.bookmarked).sort((a, b) => a.name.localeCompare(b.name));
+  const otherContacts = contacts.filter(c => !c.bookmarked).sort((a, b) => a.name.localeCompare(b.name));
 
-  // Button
+  // Render frequently accessed (bookmarked) contacts
+  if (bookmarkedContacts.length === 0) {
+    frequentlyAccessedList.innerHTML = '<li class="empty-message">No bookmarked contacts yet. Click the star icon to bookmark a contact!</li>';
+  } else {
+    bookmarkedContacts.forEach(contact => {
+      const li = createContactElement(contact);
+      frequentlyAccessedList.appendChild(li);
+    });
+  }
+
+  // Render all other contacts
+  if (otherContacts.length === 0) {
+    contactsList.innerHTML = '<li class="empty-message">All contacts are bookmarked!</li>';
+  } else {
+    otherContacts.forEach(contact => {
+      const li = createContactElement(contact);
+      contactsList.appendChild(li);
+    });
+  }
+
+  // Attach event listeners to all buttons
+  attachEventListeners();
+}
+
+// ====== CREATE CONTACT ELEMENT ======
+function createContactElement(contact) {
+  const li = document.createElement('li');
+  li.className = contact.bookmarked ? 'bookmarked' : '';
+  li.innerHTML = `
+    <div>
+      <strong>${escapeHtml(contact.name)}</strong>
+      ${contact.bookmarked ? '<span class="bookmark-badge">★ Bookmarked</span>' : ''}
+      <br>
+      Email: ${escapeHtml(contact.email)}<br>
+      Phone: ${escapeHtml(contact.phone)}
+    </div>
+    <div>
+      <button class="bookmark-btn ${contact.bookmarked ? 'bookmarked' : ''}" data-id="${contact.id}" title="${contact.bookmarked ? 'Remove bookmark' : 'Add bookmark'}">
+        ${contact.bookmarked ? '★' : '☆'}
+      </button>
+      <button class="edit-btn" data-id="${contact.id}">Edit</button>
+      <button class="delete-btn" data-id="${contact.id}">Delete</button>
+    </div>
+  `;
+  return li;
+}
+
+// ====== ATTACH EVENT LISTENERS ======
+function attachEventListeners() {
+  // Bookmark buttons
+  document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleBookmark(btn.dataset.id);
+    });
+  });
+  
+  // Edit buttons
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', () => showEditForm(btn.dataset.id));
   });
+  
+  // Delete buttons
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => deleteContact(btn.dataset.id));
   });
@@ -94,6 +145,31 @@ async function handleAddContact(e) {
   } catch (error) {
     console.error('❌ Failed to add contact:', error);
     showError(`Failed to add contact: ${error.message}`);
+  }
+}
+
+// ====== TOGGLE BOOKMARK ======
+async function toggleBookmark(id) {
+  console.log(`⭐ Toggling bookmark for contact ID: ${id}`);
+  try {
+    const response = await fetch(`${API_BASE}${id}/bookmark/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Bookmark toggled successfully:', result);
+    loadContacts(); // Reload to update both lists
+  } catch (error) {
+    console.error('❌ Failed to toggle bookmark:', error);
+    showError(`Failed to toggle bookmark: ${error.message}`);
   }
 }
 
@@ -143,9 +219,10 @@ function showEditForm(id) {
 }
 
 async function saveContact(id) {
-  const name = document.querySelector('.edit-name').value;
-  const email = document.querySelector('.edit-email').value;
-  const phone = document.querySelector('.edit-phone').value;
+  const contactElement = document.querySelector(`button[data-id="${id}"].save-btn`).closest('li');
+  const name = contactElement.querySelector('.edit-name').value;
+  const email = contactElement.querySelector('.edit-email').value;
+  const phone = contactElement.querySelector('.edit-phone').value;
 
   try {
     const response = await fetch(`${API_BASE}${id}/`, {
@@ -168,10 +245,17 @@ async function saveContact(id) {
 
 // ====== HELPER FUNCTIONS ======
 function showError(message) {
-  errorMessage.textContent = message;
-  setTimeout(() => {
-    errorMessage.textContent = '';
-  }, 5000);
+  if (errorMessage) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+      errorMessage.textContent = '';
+      errorMessage.style.display = 'none';
+    }, 5000);
+  } else {
+    console.error('Error:', message);
+    alert(message); // Fallback if error element doesn't exist
+  }
 }
 
 function escapeHtml(text) {

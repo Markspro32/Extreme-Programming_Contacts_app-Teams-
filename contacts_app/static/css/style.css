@@ -80,3 +80,71 @@ li {
 .delete-btn:hover {
   background: #d32f2f;
 }
+
+.bookmark-btn {
+  background: #ffc107;
+  color: #333;
+  font-size: 18px;
+  padding: 8px 12px;
+  margin-right: 5px;
+}
+
+.bookmark-btn:hover {
+  background: #ffb300;
+}
+
+.bookmark-btn.bookmarked {
+  background: #ff9800;
+  color: #fff;
+}
+
+.bookmark-btn.bookmarked:hover {
+  background: #f57c00;
+}
+
+.bookmark-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  background: #ff9800;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+li.bookmarked {
+  border-left: 4px solid #ff9800;
+  background: #fff8e1;
+}
+
+.error-message {
+  padding: 12px;
+  margin-bottom: 20px;
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
+  display: none;
+}
+
+.error-message:not(:empty) {
+  display: block;
+}
+
+.empty-message {
+  color: #757575;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  background: #fafafa;
+}
+
+#frequently-accessed-list {
+  margin-bottom: 30px;
+}
+
+#frequently-accessed-list li {
+  background: #fff8e1;
+  border-left: 4px solid #ff9800;
+}

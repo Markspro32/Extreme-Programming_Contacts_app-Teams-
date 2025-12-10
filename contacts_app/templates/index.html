@@ -11,6 +11,9 @@
   <div class="container">
     <h1>My Contacts</h1>
 
+    <!-- Error Message -->
+    <div id="error-message" class="error-message"></div>
+
     <!-- Add Contact Form -->
     <form id="add-contact-form">
       <h2>Add New Contact</h2>
@@ -20,10 +23,16 @@
       <button type="submit">Add Contact</button>
     </form>
 
-    <!-- Contacts List -->
-    <h2>Contact List</h2>
+    <!-- Frequently Accessed Contacts (Bookmarked) -->
+    <h2>Frequently Accessed</h2>
+    <ul id="frequently-accessed-list">
+      <!-- Bookmarked contacts will be loaded here by JavaScript -->
+    </ul>
+
+    <!-- All Contacts List -->
+    <h2>All Contacts</h2>
     <ul id="contacts-list">
-      <!-- Contacts will be loaded here by JavaScript -->
+      <!-- All contacts will be loaded here by JavaScript -->
     </ul>
   </div>
 

@@ -21,7 +21,7 @@ class ContactListView(View):
     def get(self, request):
         print("✅ GET Request: Fetching all contacts")
         try:
-            contacts = list(Contact.objects.values('id', 'name', 'email', 'phone'))
+            contacts = list(Contact.objects.values('id', 'name', 'email', 'phone', 'bookmarked'))
             print(f"📊 Returning {len(contacts)} contacts")
             return JsonResponse(contacts, safe=False)
         except Exception as e:
@@ -57,7 +57,8 @@ class ContactListView(View):
                 'id': contact.id,
                 'name': contact.name,
                 'email': contact.email,
-                'phone': contact.phone
+                'phone': contact.phone,
+                'bookmarked': contact.bookmarked
             }, status=201)
         except Exception as e:
             print(f"❌ Failed to create contact: {e}")
@@ -87,7 +88,8 @@ class ContactDetailView(View):
             'id': contact.id,
             'name': contact.name,
             'email': contact.email,
-            'phone': contact.phone
+            'phone': contact.phone,
+            'bookmarked': contact.bookmarked
         })
 
     def put(self, request, contact_id):
@@ -108,6 +110,8 @@ class ContactDetailView(View):
         contact.name = data.get('name', contact.name)
         contact.email = data.get('email', contact.email)
         contact.phone = data.get('phone', contact.phone)
+        if 'bookmarked' in data:
+            contact.bookmarked = data.get('bookmarked', contact.bookmarked)
         try:
             contact.save()
             print(f"✅ Successfully updated contact: {contact.name}")
@@ -115,7 +119,8 @@ class ContactDetailView(View):
                 'id': contact.id,
                 'name': contact.name,
                 'email': contact.email,
-                'phone': contact.phone
+                'phone': contact.phone,
+                'bookmarked': contact.bookmarked
             })
         except Exception as e:
             print(f"❌ Update failed: {e}")
@@ -135,5 +140,40 @@ class ContactDetailView(View):
             return JsonResponse({'message': 'Contact deleted successfully'}, status=204)
         except Exception as e:
             print(f"❌ Delete failed: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ContactBookmarkView(View):
+    """Handle POST requests to toggle bookmark status of a contact"""
+
+    def get_contact(self, contact_id):
+        try:
+            return Contact.objects.get(id=contact_id)
+        except Contact.DoesNotExist:
+            return None
+
+    def post(self, request, contact_id):
+        print(f"✅ POST Request: Toggling bookmark for contact ID={contact_id}")
+        contact = self.get_contact(contact_id)
+        if not contact:
+            error_msg = f"Contact with ID {contact_id} not found"
+            print(f"❌ Error: {error_msg}")
+            return JsonResponse({'error': error_msg}, status=404)
+
+        # Toggle bookmark status
+        contact.bookmarked = not contact.bookmarked
+        try:
+            contact.save()
+            print(f"✅ Successfully {'bookmarked' if contact.bookmarked else 'unbookmarked'} contact: {contact.name}")
+            return JsonResponse({
+                'id': contact.id,
+                'name': contact.name,
+                'email': contact.email,
+                'phone': contact.phone,
+                'bookmarked': contact.bookmarked
+            })
+        except Exception as e:
+            print(f"❌ Bookmark toggle failed: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
