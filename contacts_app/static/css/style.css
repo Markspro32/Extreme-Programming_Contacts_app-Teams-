@@ -132,6 +132,63 @@ li.bookmarked {
   display: block;
 }
 
+.success-message {
+  padding: 12px;
+  margin-bottom: 20px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  display: none;
+}
+
+.success-message:not(:empty) {
+  display: block;
+}
+
+/* Header Section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header-section h1 {
+  margin: 0;
+}
+
+.import-export-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.export-btn,
+.import-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.export-btn:hover,
+.import-btn:hover {
+  background: #1976D2;
+}
+
+.import-btn {
+  display: inline-block;
+  text-align: center;
+}
+
 .empty-message {
   color: #757575;
   font-style: italic;
@@ -214,18 +271,22 @@ li.bookmarked {
 .contact-method-item {
   display: flex;
   align-items: center;
-  margin: 10px 0;
-  gap: 8px;
+  margin: 12px 0;
+  gap: 10px;
   flex-wrap: wrap;
-  padding: 10px;
+  padding: 12px;
   background: #f9f9f9;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
 }
 
+.contact-method-item.first-item {
+  /* First item doesn't have remove button, so we don't need extra spacing */
+}
+
 .contact-method-item select,
 .contact-method-item input[type="text"] {
-  padding: 8px;
+  padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
@@ -250,15 +311,17 @@ li.bookmarked {
 .contact-method-item label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   white-space: nowrap;
   font-size: 14px;
   cursor: pointer;
+  margin: 0 5px;
 }
 
 .contact-method-item input[type="checkbox"] {
   width: auto;
   cursor: pointer;
+  margin: 0;
 }
 
 .remove-method-btn {
@@ -268,7 +331,7 @@ li.bookmarked {
   padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   min-width: 35px;
   height: 35px;
@@ -276,34 +339,44 @@ li.bookmarked {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .remove-method-btn:hover {
   background: #d32f2f;
 }
 
-#add-method-btn {
-  background: #2196F3;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-#add-method-btn:hover {
-  background: #1976D2;
+.remove-method-btn:active {
+  background: #b71c1c;
+  transform: scale(0.95);
 }
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 15px;
+  margin-top: 20px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+#add-method-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+#add-method-btn:hover {
+  background: #1976D2;
 }
 
 #add-contact-form button[type="submit"],
@@ -317,6 +390,7 @@ li.bookmarked {
   font-size: 16px;
   font-weight: 500;
   flex: 0 0 auto;
+  transition: background 0.3s;
 }
 
 #add-contact-form button[type="submit"]:hover,
@@ -336,8 +410,16 @@ li.bookmarked {
 .edit-method-item {
   display: flex;
   align-items: center;
-  margin: 8px 0;
-  gap: 8px;
+  margin: 12px 0;
+  gap: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.edit-method-item.first-item {
+  /* First item doesn't have remove button */
 }
 
 .edit-method-item select,
@@ -390,5 +472,40 @@ li.bookmarked {
 }
 
 .edit-actions {
-  margin-top: 10px;
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  align-items: center;
+}
+
+.edit-actions .save-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.edit-actions .save-btn:hover {
+  background: #45a049;
+}
+
+.edit-actions .cancel-btn {
+  background: #757575;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.edit-actions .cancel-btn:hover {
+  background: #616161;
 }

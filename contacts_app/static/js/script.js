@@ -9,6 +9,9 @@ const frequentlyAccessedList = document.getElementById('frequently-accessed-list
 const errorMessage = document.getElementById('error-message');
 const addMethodBtn = document.getElementById('add-method-btn');
 const contactMethodsContainer = document.getElementById('contact-methods-container');
+const exportBtn = document.getElementById('export-btn');
+const importFileInput = document.getElementById('import-file');
+const successMessage = document.getElementById('success-message');
 
 // Flag to track if event listeners are already attached
 let eventListenersAttached = false;
@@ -26,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loadContacts();
   contactForm.addEventListener('submit', handleAddContact);
   addMethodBtn.addEventListener('click', addContactMethodField);
+  
+  // Import/Export functionality
+  if (exportBtn) {
+    exportBtn.addEventListener('click', handleExport);
+  }
+  if (importFileInput) {
+    importFileInput.addEventListener('change', handleImport);
+  }
 
   // Initialize remove buttons for existing method items
   setupRemoveMethodButtons();
@@ -210,8 +221,21 @@ function setupEventDelegation() {
 
 // ====== CONTACT METHOD FORM MANAGEMENT ======
 function addContactMethodField() {
-  const template = document.querySelector('.contact-method-item');
+  const template = document.querySelector('.contact-method-item.first-item');
   const newItem = template.cloneNode(true);
+
+  // Remove first-item class and add remove button
+  newItem.classList.remove('first-item');
+  
+  // Add remove button if it doesn't exist
+  if (!newItem.querySelector('.remove-method-btn')) {
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-method-btn';
+    removeBtn.title = 'Remove this contact method';
+    removeBtn.textContent = '×';
+    newItem.appendChild(removeBtn);
+  }
 
   // Clear values in the new item
   newItem.querySelector('.method-type').value = '';
@@ -220,7 +244,7 @@ function addContactMethodField() {
   newItem.querySelector('.method-primary').checked = false;
 
   contactMethodsContainer.appendChild(newItem);
-  setupRemoveMethodButtons();
+  // No need to setup listeners - event delegation handles it
 }
 
 function removeContactMethodField(button) {
@@ -239,9 +263,25 @@ function removeContactMethodField(button) {
 }
 
 function setupRemoveMethodButtons() {
-  document.querySelectorAll('.remove-method-btn').forEach(btn => {
-    btn.addEventListener('click', () => removeContactMethodField(btn));
+  // Use event delegation on the container for better reliability
+  if (!contactMethodsContainer) return;
+  
+  // Remove any existing listener by cloning (if needed)
+  // Actually, we'll use a flag to prevent duplicate listeners
+  if (contactMethodsContainer.dataset.listenersAttached === 'true') {
+    return;
+  }
+  
+  contactMethodsContainer.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-method-btn');
+    if (removeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      removeContactMethodField(removeBtn);
+    }
   });
+  
+  contactMethodsContainer.dataset.listenersAttached = 'true';
 }
 
 // ====== ADD CONTACT ======
@@ -417,8 +457,11 @@ async function fetchContactData(contactId) {
 function renderEditForm(contactElement, contact) {
   let methodsHtml = '';
   if (contact.contact_methods && contact.contact_methods.length > 0) {
-    methodsHtml = contact.contact_methods.map((method, index) =>
-      `<div class="edit-method-item">
+    methodsHtml = contact.contact_methods.map((method, index) => {
+      const isFirst = index === 0;
+      const removeButton = isFirst ? '' : `<button type="button" class="remove-edit-method-btn" data-index="${index}">Remove</button>`;
+      const firstClass = isFirst ? 'first-item' : '';
+      return `<div class="edit-method-item ${firstClass}">
         <select class="edit-method-type" data-index="${index}">
           <option value="phone" ${method.method_type === 'phone' ? 'selected' : ''}>Phone</option>
           <option value="email" ${method.method_type === 'email' ? 'selected' : ''}>Email</option>
@@ -428,9 +471,9 @@ function renderEditForm(contactElement, contact) {
         <input type="text" class="edit-method-label" data-index="${index}" value="${escapeHtml(method.label)}" placeholder="Label" />
         <input type="text" class="edit-method-value" data-index="${index}" value="${escapeHtml(method.value)}" placeholder="Value" />
         <label><input type="checkbox" class="edit-method-primary" data-index="${index}" ${method.is_primary ? 'checked' : ''} /> Primary</label>
-        <button type="button" class="remove-edit-method-btn" data-index="${index}">Remove</button>
-      </div>`
-    ).join('');
+        ${removeButton}
+      </div>`;
+    }).join('');
   }
 
   contactElement.innerHTML = `
@@ -562,4 +605,114 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ====== EXPORT CONTACTS ======
+async function handleExport() {
+  console.log('📥 Exporting contacts to Excel...');
+  
+  try {
+    const response = await fetch(`${API_BASE}export/`, {
+      method: 'GET'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    // Get the blob from response
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'contacts_export.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showSuccess('Contacts exported successfully!');
+    console.log('✅ Contacts exported successfully');
+  } catch (error) {
+    console.error('❌ Failed to export contacts:', error);
+    showError(`Failed to export contacts: ${error.message}`);
+  }
+}
+
+// ====== IMPORT CONTACTS ======
+async function handleImport(event) {
+  const file = event.target.files[0];
+  
+  if (!file) {
+    return;
+  }
+
+  console.log('📤 Importing contacts from Excel...', file.name);
+
+  // Validate file type
+  if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+    showError('Invalid file type. Please upload an Excel file (.xlsx or .xls)');
+    importFileInput.value = ''; // Reset file input
+    return;
+  }
+
+  // Create FormData
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch(`${API_BASE}import/`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Import result:', result);
+
+    // Reset file input
+    importFileInput.value = '';
+
+    // Show success message
+    let message = result.message || `Successfully imported ${result.imported || 0} contact(s)`;
+    if (result.skipped > 0) {
+      message += ` (${result.skipped} skipped)`;
+    }
+    showSuccess(message);
+
+    // Show errors if any
+    if (result.errors && result.errors.length > 0) {
+      console.warn('⚠️ Import errors:', result.errors);
+      const errorList = result.errors.slice(0, 5).join(', ');
+      showError(`Some rows had errors: ${errorList}${result.errors.length > 5 ? '...' : ''}`);
+    }
+
+    // Reload contacts
+    await loadContacts();
+  } catch (error) {
+    console.error('❌ Failed to import contacts:', error);
+    showError(`Failed to import contacts: ${error.message}`);
+    importFileInput.value = ''; // Reset file input
+  }
+}
+
+// ====== SHOW SUCCESS MESSAGE ======
+function showSuccess(message) {
+  if (successMessage) {
+    successMessage.textContent = message;
+    successMessage.style.display = 'block';
+    setTimeout(() => {
+      successMessage.textContent = '';
+      successMessage.style.display = 'none';
+    }, 5000);
+  } else {
+    console.log('Success:', message);
+  }
 }

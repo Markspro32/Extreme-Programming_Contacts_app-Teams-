@@ -1,5 +1,7 @@
 import json
-from django.http import JsonResponse
+import pandas as pd
+from io import BytesIO
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -400,4 +402,210 @@ class ContactMethodDetailView(View):
         except Exception as e:
             print(f"❌ Delete failed: {e}")
             return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ContactExportView(View):
+    """Handle GET requests to export all contacts to Excel"""
+
+    def get(self, request):
+        print("✅ GET Request: Exporting contacts to Excel")
+        try:
+            # Get all contacts with their methods
+            contacts = Contact.objects.prefetch_related('contact_methods').all()
+            
+            # Prepare data for Excel
+            export_data = []
+            for contact in contacts:
+                # Get all contact methods grouped by type
+                methods_by_type = {}
+                for method in contact.contact_methods.all():
+                    method_type = method.get_method_type_display()
+                    if method_type not in methods_by_type:
+                        methods_by_type[method_type] = []
+                    
+                    method_str = method.value
+                    if method.label:
+                        method_str += f" ({method.label})"
+                    if method.is_primary:
+                        method_str += " [Primary]"
+                    
+                    methods_by_type[method_type].append(method_str)
+                
+                # Create row data
+                row = {
+                    'Name': contact.name,
+                    'Bookmarked': 'Yes' if contact.bookmarked else 'No',
+                    'Phone': '; '.join(methods_by_type.get('Phone', [])),
+                    'Email': '; '.join(methods_by_type.get('Email', [])),
+                    'Social Media': '; '.join(methods_by_type.get('Social Media', [])),
+                    'Address': '; '.join(methods_by_type.get('Address', []))
+                }
+                export_data.append(row)
+            
+            # Create DataFrame
+            df = pd.DataFrame(export_data)
+            
+            # Create Excel file in memory
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Contacts')
+                
+                # Auto-adjust column widths
+                worksheet = writer.sheets['Contacts']
+                from openpyxl.utils import get_column_letter
+                for idx, col in enumerate(df.columns):
+                    max_length = max(
+                        df[col].astype(str).map(len).max(),
+                        len(col)
+                    )
+                    col_letter = get_column_letter(idx + 1)
+                    worksheet.column_dimensions[col_letter].width = min(max_length + 2, 50)
+            
+            output.seek(0)
+            
+            # Create HTTP response
+            response = HttpResponse(
+                output.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="contacts_export.xlsx"'
+            
+            print(f"✅ Successfully exported {len(export_data)} contacts")
+            return response
+            
+        except Exception as e:
+            print(f"❌ Export failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ContactImportView(View):
+    """Handle POST requests to import contacts from Excel"""
+
+    def post(self, request):
+        print("✅ POST Request: Importing contacts from Excel")
+        
+        if 'file' not in request.FILES:
+            error_msg = "No file provided"
+            print(f"❌ Error: {error_msg}")
+            return JsonResponse({'error': error_msg}, status=400)
+        
+        file = request.FILES['file']
+        
+        # Check file extension
+        if not file.name.endswith(('.xlsx', '.xls')):
+            error_msg = "Invalid file type. Please upload an Excel file (.xlsx or .xls)"
+            print(f"❌ Error: {error_msg}")
+            return JsonResponse({'error': error_msg}, status=400)
+        
+        try:
+            # Read Excel file
+            df = pd.read_excel(file, engine='openpyxl')
+            
+            # Validate required columns
+            required_columns = ['Name']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                error_msg = f"Missing required columns: {', '.join(missing_columns)}"
+                print(f"❌ Error: {error_msg}")
+                return JsonResponse({'error': error_msg}, status=400)
+            
+            # Process each row
+            imported_count = 0
+            skipped_count = 0
+            errors = []
+            
+            for index, row in df.iterrows():
+                try:
+                    name = str(row['Name']).strip()
+                    if not name or name == 'nan':
+                        skipped_count += 1
+                        continue
+                    
+                    # Check if contact already exists
+                    bookmarked = str(row.get('Bookmarked', 'No')).strip().lower() == 'yes'
+                    
+                    # Create contact
+                    contact, created = Contact.objects.get_or_create(
+                        name=name,
+                        defaults={'bookmarked': bookmarked}
+                    )
+                    
+                    if not created:
+                        # Update bookmark status if contact exists
+                        contact.bookmarked = bookmarked
+                        contact.save()
+                        # Clear existing methods for re-import
+                        contact.contact_methods.all().delete()
+                    
+                    # Add contact methods
+                    method_mappings = {
+                        'Phone': 'phone',
+                        'Email': 'email',
+                        'Social Media': 'social_media',
+                        'Address': 'address'
+                    }
+                    
+                    for excel_col, method_type in method_mappings.items():
+                        if excel_col in df.columns:
+                            value = str(row.get(excel_col, '')).strip()
+                            if value and value != 'nan':
+                                # Handle multiple values separated by semicolon
+                                values = [v.strip() for v in value.split(';')]
+                                for val in values:
+                                    if val:
+                                        # Parse label and primary status
+                                        label = ''
+                                        is_primary = False
+                                        
+                                        if '[' in val and ']' in val:
+                                            if '[Primary]' in val:
+                                                is_primary = True
+                                                val = val.replace('[Primary]', '').strip()
+                                        
+                                        if '(' in val and ')' in val:
+                                            # Extract label
+                                            start = val.rfind('(')
+                                            end = val.rfind(')')
+                                            if start < end:
+                                                label = val[start+1:end].strip()
+                                                val = val[:start].strip()
+                                        
+                                        if val:
+                                            ContactMethod.objects.create(
+                                                contact=contact,
+                                                method_type=method_type,
+                                                label=label if label else '',
+                                                value=val,
+                                                is_primary=is_primary
+                                            )
+                    
+                    imported_count += 1
+                    
+                except Exception as e:
+                    error_msg = f"Row {index + 2}: {str(e)}"  # +2 because Excel is 1-indexed and has header
+                    errors.append(error_msg)
+                    print(f"❌ Error processing row {index + 2}: {e}")
+                    skipped_count += 1
+            
+            result = {
+                'message': f'Successfully imported {imported_count} contact(s)',
+                'imported': imported_count,
+                'skipped': skipped_count
+            }
+            
+            if errors:
+                result['errors'] = errors[:10]  # Limit to first 10 errors
+            
+            print(f"✅ Successfully imported {imported_count} contacts, skipped {skipped_count}")
+            return JsonResponse(result, status=200)
+            
+        except Exception as e:
+            print(f"❌ Import failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': f'Failed to import file: {str(e)}'}, status=500)
 

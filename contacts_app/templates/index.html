@@ -9,10 +9,19 @@
 </head>
 <body>
   <div class="container">
-    <h1>My Contacts</h1>
+    <div class="header-section">
+      <h1>My Contacts</h1>
+      <div class="import-export-buttons">
+        <button type="button" id="export-btn" class="export-btn">📥 Export to Excel</button>
+        <label for="import-file" class="import-btn">📤 Import from Excel</label>
+        <input type="file" id="import-file" accept=".xlsx,.xls" style="display: none;" />
+      </div>
+    </div>
 
     <!-- Error Message -->
     <div id="error-message" class="error-message"></div>
+    <!-- Success Message -->
+    <div id="success-message" class="success-message"></div>
 
     <!-- Add Contact Form -->
     <form id="add-contact-form">
@@ -21,7 +30,7 @@
 
       <div id="contact-methods-container">
         <h3>Contact Methods</h3>
-        <div class="contact-method-item">
+        <div class="contact-method-item first-item">
           <select class="method-type" required>
             <option value="">Select Type</option>
             <option value="phone">Phone</option>
@@ -35,7 +44,7 @@
             <input type="checkbox" class="method-primary" />
             <span>Primary</span>
           </label>
-          <button type="button" class="remove-method-btn" title="Remove this contact method">×</button>
+          <!-- No remove button for first item -->
         </div>
       </div>
       <div class="form-actions">
