@@ -148,3 +148,247 @@ li.bookmarked {
   background: #fff8e1;
   border-left: 4px solid #ff9800;
 }
+
+/* Contact Methods */
+.contact-info {
+  flex: 1;
+}
+
+.contact-methods {
+  margin-top: 5px;
+}
+
+.contact-method {
+  font-size: 14px;
+  color: #666;
+  margin: 4px 0;
+  padding: 4px 0;
+  line-height: 1.5;
+}
+
+.contact-method strong {
+  color: #333;
+  margin-right: 5px;
+}
+
+.method-label-text {
+  color: #888;
+  font-style: italic;
+}
+
+.contact-method.phone:before {
+  content: "📞 ";
+}
+
+.contact-method.email:before {
+  content: "✉️ ";
+}
+
+.contact-method.social_media:before {
+  content: "🌐 ";
+}
+
+.contact-method.address:before {
+  content: "📍 ";
+}
+
+.primary-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.no-methods {
+  color: #999;
+  font-style: italic;
+}
+
+/* Contact Method Forms */
+#contact-methods-container {
+  margin-top: 15px;
+}
+
+.contact-method-item {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.contact-method-item select,
+.contact-method-item input[type="text"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.contact-method-item .method-type {
+  width: 140px;
+  min-width: 120px;
+}
+
+.contact-method-item .method-label {
+  width: 120px;
+  min-width: 100px;
+}
+
+.contact-method-item .method-value {
+  flex: 1;
+  min-width: 180px;
+}
+
+.contact-method-item label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.contact-method-item input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.remove-method-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.remove-method-btn:hover {
+  background: #d32f2f;
+}
+
+#add-method-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#add-method-btn:hover {
+  background: #1976D2;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
+}
+
+#add-contact-form button[type="submit"],
+#submit-contact-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  flex: 0 0 auto;
+}
+
+#add-contact-form button[type="submit"]:hover,
+#submit-contact-btn:hover {
+  background: #45a049;
+}
+
+/* Edit Form Styles */
+.edit-form {
+  width: 100%;
+}
+
+.edit-methods-container {
+  margin: 10px 0;
+}
+
+.edit-method-item {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+  gap: 8px;
+}
+
+.edit-method-item select,
+.edit-method-item input {
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.edit-method-item .edit-method-type {
+  width: 110px;
+}
+
+.edit-method-item .edit-method-label {
+  width: 80px;
+}
+
+.edit-method-item .edit-method-value {
+  flex: 1;
+  min-width: 120px;
+}
+
+.add-edit-method-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px 0;
+}
+
+.add-edit-method-btn:hover {
+  background: #1976D2;
+}
+
+.remove-edit-method-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.remove-edit-method-btn:hover {
+  background: #d32f2f;
+}
+
+.edit-actions {
+  margin-top: 10px;
+}

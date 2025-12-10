@@ -18,9 +18,30 @@
     <form id="add-contact-form">
       <h2>Add New Contact</h2>
       <input type="text" id="name" placeholder="Name" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="text" id="phone" placeholder="Phone" required />
-      <button type="submit">Add Contact</button>
+
+      <div id="contact-methods-container">
+        <h3>Contact Methods</h3>
+        <div class="contact-method-item">
+          <select class="method-type" required>
+            <option value="">Select Type</option>
+            <option value="phone">Phone</option>
+            <option value="email">Email</option>
+            <option value="social_media">Social Media</option>
+            <option value="address">Address</option>
+          </select>
+          <input type="text" class="method-label" placeholder="Label (optional)" />
+          <input type="text" class="method-value" placeholder="Value" required />
+          <label>
+            <input type="checkbox" class="method-primary" />
+            <span>Primary</span>
+          </label>
+          <button type="button" class="remove-method-btn" title="Remove this contact method">×</button>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="add-method-btn">+ Add Contact Method</button>
+        <button type="submit" id="submit-contact-btn">Add Contact</button>
+      </div>
     </form>
 
     <!-- Frequently Accessed Contacts (Bookmarked) -->
