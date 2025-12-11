@@ -227,7 +227,22 @@ cd Contacts### 2. Create and activate a virtual environment
 python3 -m venv venv
 source venv/bin/activate      # On Windows: venv\Scripts\activate### 3. Install dependencies
 
-pip install -r requirements.txt### 4. Apply migrations
+**On Windows Server (to avoid build errors):**
+
+First, upgrade pip, setuptools, and wheel to ensure you get pre-built wheels:
+```bash
+python -m pip install --upgrade pip setuptools wheel
+```
+
+Then install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+**On Linux/Mac:**
+```bash
+pip install -r requirements.txt
+```### 4. Apply migrations
 
 python3 manage.py migrate(If you change models, run `python3 manage.py makemigrations` first.)
 

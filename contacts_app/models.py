@@ -46,7 +46,7 @@ class ContactMethod(models.Model):
     is_primary = models.BooleanField(default=False, help_text="Mark as primary contact method")
 
     class Meta:
-        ordering = ['method_type', '-is_primary', 'label']
+        ordering = ['-is_primary', 'label', 'method_type']
 
     def __str__(self):
         label_part = f" ({self.label})" if self.label else ""

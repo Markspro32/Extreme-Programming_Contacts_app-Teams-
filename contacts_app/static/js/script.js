@@ -1,6 +1,6 @@
 // ====== CONFIGURATION ======
 // Backend API address - use relative URL to work with any host
-const API_BASE = '/contacts/';
+const API_BASE = 'http://8.138.121.2:8000/';
 
 // DOM
 const contactForm = document.getElementById('add-contact-form');
