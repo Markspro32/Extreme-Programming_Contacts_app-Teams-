@@ -244,10 +244,9 @@ pip install -r requirements.txt
 pip install --only-binary :all: -r requirements.txt
 ```
 
-**Note:** If matplotlib installation fails, you can install it separately with:
-```bash
-pip install matplotlib==3.9.4 --only-binary matplotlib
-```
+**Important for Python 3.11 on Windows:**
+- The requirements.txt has been configured with package versions that have confirmed pre-built wheels for Python 3.11 on Windows
+- If you encounter "meson.build" errors, it means pip is trying to build from source - use the `--only-binary :all:` flag above
 
 **On Linux/Mac:**
 ```bash
