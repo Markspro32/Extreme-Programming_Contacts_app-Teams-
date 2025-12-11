@@ -239,6 +239,16 @@ Then install dependencies:
 pip install -r requirements.txt
 ```
 
+**If you still encounter build errors** (especially with Python 3.11), try forcing pip to use only pre-built wheels:
+```bash
+pip install --only-binary :all: -r requirements.txt
+```
+
+**Note:** If matplotlib installation fails, you can install it separately with:
+```bash
+pip install matplotlib==3.9.4 --only-binary matplotlib
+```
+
 **On Linux/Mac:**
 ```bash
 pip install -r requirements.txt
