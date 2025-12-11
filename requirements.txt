@@ -12,7 +12,7 @@ asgiref==3.10.0
 openpyxl==3.1.2
 
 # Data processing (versions with confirmed Windows wheels for Python 3.11)
-pandas==2.1.4
+pandas
 numpy==1.26.4
 
 # HTTP requests
