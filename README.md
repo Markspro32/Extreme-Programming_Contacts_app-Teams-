@@ -227,31 +227,7 @@ cd Contacts### 2. Create and activate a virtual environment
 python3 -m venv venv
 source venv/bin/activate      # On Windows: venv\Scripts\activate### 3. Install dependencies
 
-**On Windows Server (to avoid build errors):**
-
-First, upgrade pip, setuptools, and wheel to ensure you get pre-built wheels:
-```bash
-python -m pip install --upgrade pip setuptools wheel
-```
-
-Then install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-**If you still encounter build errors** (especially with Python 3.11), try forcing pip to use only pre-built wheels:
-```bash
-pip install --only-binary :all: -r requirements.txt
-```
-
-**Important for Python 3.11 on Windows:**
-- The requirements.txt has been configured with package versions that have confirmed pre-built wheels for Python 3.11 on Windows
-- If you encounter "meson.build" errors, it means pip is trying to build from source - use the `--only-binary :all:` flag above
-
-**On Linux/Mac:**
-```bash
-pip install -r requirements.txt
-```### 4. Apply migrations
+pip install -r requirements.txt### 4. Apply migrations
 
 python3 manage.py migrate(If you change models, run `python3 manage.py makemigrations` first.)
 
