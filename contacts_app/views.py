@@ -2,6 +2,7 @@ import json
 import pandas as pd
 from io import BytesIO
 from django.http import JsonResponse, HttpResponse
+from django.db.utils import OperationalError
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +16,26 @@ def parse_json_body(request):
     except (json.JSONDecodeError, UnicodeDecodeError) as e:
         print(f"❌ JSON parsing failed: {e}")
         return None
+
+
+def maybe_db_not_ready_response(exc: Exception):
+    """
+    Provide a clearer message when migrations were never applied.
+    Common on fresh deploys / new local setups.
+    """
+    if not isinstance(exc, OperationalError):
+        return None
+    msg = str(exc)
+    if "no such table" in msg or "does not exist" in msg:
+        return JsonResponse(
+            {
+                "error": "Database is not initialized (missing tables). Run migrations on the server/local machine.",
+                "how_to_fix": "python manage.py migrate",
+                "details": msg,
+            },
+            status=500,
+        )
+    return None
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ContactListView(View):
@@ -45,6 +66,9 @@ class ContactListView(View):
             return JsonResponse(contacts, safe=False)
         except Exception as e:
             print(f"❌ GET Failed: {e}")
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
             return JsonResponse({'error': str(e)}, status=500)
 
     def post(self, request):
@@ -115,6 +139,9 @@ class ContactListView(View):
             }, status=201)
         except Exception as e:
             print(f"❌ Failed to create contact: {e}")
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
             return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -127,10 +154,19 @@ class ContactDetailView(View):
             return Contact.objects.get(id=contact_id)
         except Contact.DoesNotExist:
             return None
+        except Exception as e:
+            # Let callers surface a better error (e.g. missing tables)
+            raise e
 
     def get(self, request, contact_id):
         print(f"✅ GET Request: Fetching contact ID={contact_id}")
-        contact = self.get_contact(contact_id)
+        try:
+            contact = self.get_contact(contact_id)
+        except Exception as e:
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
+            return JsonResponse({'error': str(e)}, status=500)
         if not contact:
             error_msg = f"Contact with ID {contact_id} not found"
             print(f"❌ Error: {error_msg}")
@@ -155,7 +191,13 @@ class ContactDetailView(View):
 
     def put(self, request, contact_id):
         print(f"✅ PUT Request: Updating contact ID={contact_id}")
-        contact = self.get_contact(contact_id)
+        try:
+            contact = self.get_contact(contact_id)
+        except Exception as e:
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
+            return JsonResponse({'error': str(e)}, status=500)
         if not contact:
             error_msg = f"Contact with ID {contact_id} not found"
             print(f"❌ Error: {error_msg}")
@@ -205,11 +247,20 @@ class ContactDetailView(View):
             })
         except Exception as e:
             print(f"❌ Update failed: {e}")
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
             return JsonResponse({'error': str(e)}, status=500)
 
     def delete(self, request, contact_id):
         print(f"✅ DELETE Request: Deleting contact ID={contact_id}")
-        contact = self.get_contact(contact_id)
+        try:
+            contact = self.get_contact(contact_id)
+        except Exception as e:
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
+            return JsonResponse({'error': str(e)}, status=500)
         if not contact:
             error_msg = f"Contact with ID {contact_id} not found"
             print(f"❌ Error: {error_msg}")
@@ -221,6 +272,9 @@ class ContactDetailView(View):
             return JsonResponse({'message': 'Contact deleted successfully'}, status=204)
         except Exception as e:
             print(f"❌ Delete failed: {e}")
+            maybe = maybe_db_not_ready_response(e)
+            if maybe:
+                return maybe
             return JsonResponse({'error': str(e)}, status=500)
 
 

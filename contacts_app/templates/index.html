@@ -66,6 +66,10 @@
     </ul>
   </div>
 
+  <script>
+    // Let Django provide the correct API base (works on local + server)
+    window.__CONTACTS_API_BASE__ = "{% url 'contact-list' %}";
+  </script>
   <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

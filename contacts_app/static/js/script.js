@@ -1,6 +1,7 @@
 // ====== CONFIGURATION ======
-// Backend API address - use relative URL to work with any host
-const API_BASE = '/contacts/';
+// Backend API address - provided by Django (falls back to /contacts/)
+// NOTE: This avoids hardcoding IP/port and prevents accidental POST to "/".
+const API_BASE = (window.__CONTACTS_API_BASE__ || '/contacts/').replace(/\/?$/, '/');
 
 // DOM
 const contactForm = document.getElementById('add-contact-form');
